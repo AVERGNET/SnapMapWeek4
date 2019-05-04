@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -77,18 +79,40 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
 
-        UserLocationsAdapter adapter = new UserLocationsAdapter();
+        adapter = new UserLocationsAdapter();
 
         recyclerView.setAdapter(adapter);
 
-        DataSources.getInstance().getStaticUserLocations(new DataSources.Callback<List<UserLocationData>>() {
+        updateAdapter();
+
+        updateUserLocation();
+
+        return root;
+    }
+
+    private void updateAdapter() {
+        DataSources.getInstance().getActiveUserLocations(new DataSources.Callback<List<UserLocationData>>() {
             @Override
             public void onDataFetched(List<UserLocationData> data) {
                 adapter.setItems(data);
             }
         });
+    }
 
-        return root;
+    private void updateUserLocation(){
+
+        String userId = "user_06";
+
+        UserLocationData locationData = new UserLocationData( "#08F6DF", 33.9713882,-120.0861787,"Some Island", userId, "Alexis");
+        DataSources.getInstance().updateUserLocation(userId, locationData, new DataSources.Callback<UserLocationData>() {
+            @Override
+            public void onDataFetched(UserLocationData data) {
+                Toast.makeText(getContext(), data != null ? "Success" : "Failure", Toast.LENGTH_LONG).show();
+
+                if(data != null)
+                    updateAdapter();
+            }
+        });
     }
 
     @Override
